@@ -1,37 +1,33 @@
-const express = require('express')
-const request = require('request')
-const bodyParser = require('body-parser')
+let bot = new line.Client(LINE_CONFIG);
 
-// create a new express server
-const app = express()
+// -----------------------------------------------------------------------------
+// ルーター設定
+server.post('/webhook', (req, res, next) => {
+    // 先行してLINE側にステータスコード200でレスポンスする。
+    res.send(200);
 
-app.use(bodyParser.json()) // for parsing application/json
-app.use(bodyParser.urlencoded({
-  extended: true
-})) // for parsing application/x-www-form-urlencoded
+    // すべてのイベント処理のプロミスを格納する配列。
+    let events_processed = [];
 
-app.post('/callback', (req, res) => {
-  const options = {
-    method: 'POST',
-    uri: 'https://api.line.me/v2/bot/message/reply',
-    body: {
-      replyToken: req.body.events[0].replyToken,
-      messages: [{
-        type: 'text',
-        text: req.body.events[0].message.text // ここに指定した文字列がボットの発言になる
-      }]
-    },
-    auth: {
-      bearer: 'gT3X5QolGIUgr0/qLp1msgha+Hj8iXbfbLxbiwvetjme/d0j0LbRvcUOGAet+9IdJfEeB2eF0XIE3dS3sz+OnfIMcHZmjcaEYkOiX9vmYjE0+uLRRy9z0HevjZ4XGPMsFJ73Y+tLBiGm4Poj66SuIgdB04t89/1O/w1cDnyilFU=' // ここは自分のtokenに書き換える
-    },
-    json: true
-  }
-  request(options, (err, response, body) => {
-    console.log(JSON.stringify(response))
-  })
-  res.send('OK')
-})
+    // イベントオブジェクトを順次処理。
+    req.body.events.map((event) => {
+        // この処理の対象をイベントタイプがメッセージで、かつ、テキストタイプだった場合に限定。
+        if (event.type == "message" || event.message.type == "text"){
+            // ユーザーからのテキストメッセージが「こんにちは」だった場合のみ反応。
+            if (event.message.text == "こんにちは"){
+                // replyMessage()で返信し、そのプロミスをevents_processedに追加。
+                events_processed.push(bot.replyMessage(event.replyToken, {
+                    type: "text",
+                    text: "これはこれは"
+                }));
+            }
+        }
+    });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log('server starting on PORT:' + process.env.PORT)
-})
+    // すべてのイベント処理が終了したら何個のイベントが処理されたか出力。
+    Promise.all(events_processed).then(
+        (response) => {
+            console.log(`${response.length} events processed.`);
+        }
+    );
+});
