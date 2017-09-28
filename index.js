@@ -1,43 +1,37 @@
-let restify = require('restify');
-let line = require("@line/bot-sdk");
-let bot = new line.Client(LINE_CONFIG);
+const express = require('express')
+const request = require('request')
+const bodyParser = require('body-parser')
 
-const LINE_CONFIG = {
-    channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
-    channelSecret: process.env.LINE_CHANNEL_SECRET
-};
+// create a new express server
+const app = express()
 
-let server = restify.createServer();
-server.listen(process.env.PORT || 3000, function() {
-  console.log("Node is running...");
-});
+app.use(bodyParser.json()) // for parsing application/json
+app.use(bodyParser.urlencoded({
+  extended: true
+})) // for parsing application/x-www-form-urlencoded
 
-server.use(line.middleware(LINE_CONFIG));
+app.post('/callback', (req, res) => {
+  const options = {
+    method: 'POST',
+    uri: 'https://api.line.me/v2/bot/message/reply',
+    body: {
+      replyToken: req.body.events[0].replyToken,
+      messages: [{
+        type: 'text',
+        text: req.body.events[0].message.text // ここに指定した文字列がボットの発言になる
+      }]
+    },
+    auth: {
+      bearer: 'gT3X5QolGIUgr0/qLp1msgha+Hj8iXbfbLxbiwvetjme/d0j0LbRvcUOGAet+9IdJfEeB2eF0XIE3dS3sz+OnfIMcHZmjcaEYkOiX9vmYjE0+uLRRy9z0HevjZ4XGPMsFJ73Y+tLBiGm4Poj66SuIgdB04t89/1O/w1cDnyilFU=' // ここは自分のtokenに書き換える
+    },
+    json: true
+  }
+  request(options, (err, response, body) => {
+    console.log(JSON.stringify(response))
+  })
+  res.send('OK')
+})
 
-server.post('/webhook', (req, res, next) => {
-
-    res.send(200);
-
-    let events_processed = [];
-
-    req.body.events.map((event) => {
-
-        if (event.type == "message" || event.message.type == "text"){
-
-            if (event.message.text == "こんにちは"){
-
-                events_processed.push(bot.replyMessage(event.replyToken, {
-                    type: "text",
-                    text: "これはこれは"
-                }));
-            }
-        }
-    });
-
-
-    Promise.all(events_processed).then(
-        (response) => {
-            console.log(`${response.length} events processed.`);
-        }
-    );
-});
+app.listen(process.env.PORT || 3000, () => {
+  console.log('server starting on PORT:' + process.env.PORT)
+})
