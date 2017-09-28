@@ -1,6 +1,6 @@
 let restify = require('restify');
 let line = require("@line/bot-sdk");
-
+let bot = new line.Client(LINE_CONFIG);
 
 const LINE_CONFIG = {
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
@@ -14,12 +14,6 @@ server.listen(process.env.PORT || 3000, function() {
 
 server.use(line.middleware(LINE_CONFIG));
 
-server.post('/webhook', (req, res, next) => {
-    res.send(200);
-    console.log(req.body);
-    });
-
-let bot = new line.Client(LINE_CONFIG);
 server.post('/webhook', (req, res, next) => {
 
     res.send(200);
