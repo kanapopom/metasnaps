@@ -1,10 +1,12 @@
 let restify = require("restify");
 let line = require("@line/bot-sdk");
+let apiai = require("apiai-promisified");
 
 const LINE_CONFIG = {
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
     channelSecret: process.env.LINE_CHANNEL_SECRET
 };
+const APIAI_CLIENT_ACCESS_TOKEN = process.env.APIAI_CLIENT_ACCESS_TOKEN;
 
 let server = restify.createServer();
 server.listen(process.env.PORT || 3000, function() {
@@ -14,31 +16,50 @@ server.listen(process.env.PORT || 3000, function() {
 server.use(line.middleware(LINE_CONFIG));
 
 let bot = new line.Client(LINE_CONFIG);
+let nlp = new apiai(APIAI_CLIENT_ACCESS_TOKEN, {language: "ja"});
 
 server.post('/webhook', (req, res, next) => {
+
     res.send(200);
 
-        let events_processed = [];
+    let events_processed = [];
 
-        // イベントオブジェクトを順次処理。
-        req.body.events.map((event) => {
-            // この処理の対象をイベントタイプがメッセージで、かつ、テキストタイプだった場合に限定。
-            if (event.type == "message" || event.message.type == "text"){
-                // ユーザーからのテキストメッセージが「こんにちは」だった場合のみ反応。
-                if (event.message.text == "こんにちは"){
-                    // replyMessage()で返信し、そのプロミスをevents_processedに追加。
-                    events_processed.push(bot.replyMessage(event.replyToken, {
-                        type: "text",
-                        text: "これはこれは"
-                    }));
-                }
-            }
-        });
+    req.body.events.map((event) => {
 
-        // すべてのイベント処理が終了したら何個のイベントが処理されたか出力。
-        Promise.all(events_processed).then(
-            (response) => {
-                console.log(`${response.length} events processed.`);
-            }
-        );
+        if (event.type == "message" || event.message.type == "text"){
+            events_processed.push(
+
+                nlp.textRequest(event.message.text, {sessionId: event.source.userId}).then(
+                    (response) => {
+                        console.log(`The action is ${response.result.action}.`);
+                        let reply_message;
+
+                        if (response.result.action == "change"){
+
+                            if (response.result.parameters.change === ""){
+                                reply_message = `${response.result.parameters.change}`;
+                            }
+                        } else if (response.result.action == "input.unknown"){
+                            reply_message = response.result.fulfillment.speech;
+                        }
+
+                        return bot.replyMessage(event.replyToken, {
+                            type: "text",
+                            text: reply_message
+                        });
+                    }
+                )
+            );
+        }
     });
+
+
+    Promise.all(events_processed).then(
+        (response) => {
+            console.log(`${response.length} events processed.`);
+        },
+        (error) => {
+            console.log(error);
+        }
+    );
+});
