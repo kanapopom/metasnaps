@@ -35,8 +35,8 @@ server.post('/webhook', (req, res, next) => {
 
                         if (response.result.action == "change"){
                                 reply_message = `${response.result.parameters.change}`;
-                            }
-                        } else if (response.result.action == "input.unknown"){
+                            }                          
+                        else if (response.result.action == "input.unknown"){
                             reply_message = response.result.fulfillment.speech;
                         }
 
