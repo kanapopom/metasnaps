@@ -36,6 +36,12 @@ server.post('/webhook', (req, res, next) => {
                         if (response.result.action == "change"){
                                 reply_message = `${response.result.fulfillment.speech}`;
                             }
+                            else if (response.result.action == "nega"){
+                                    reply_message = `${response.result.fulfillment.speech}`;
+                                }
+                                else if (response.result.action == "pozi"){
+                                        reply_message = `${response.result.fulfillment.speech}`;
+                                    }
                         else if (response.result.action == "input.unknown"){
                             reply_message = response.result.fulfillment.speech;
                         }
