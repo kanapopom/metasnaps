@@ -1,6 +1,6 @@
 let restify = require("restify");
 let line = require("@line/bot-sdk");
-let apiai = require("apiai-promisified");
+const apiai = require("apiai-promisified");
 
 const LINE_CONFIG = {
     channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
@@ -16,7 +16,7 @@ server.listen(process.env.PORT || 3000, function() {
 server.use(line.middleware(LINE_CONFIG));
 
 let bot = new line.Client(LINE_CONFIG);
-let nlp = new apiai(APIAI_CLIENT_ACCESS_TOKEN, {language: "ja"});
+const nlp = new apiai(APIAI_CLIENT_ACCESS_TOKEN, {language: "ja"});
 
 server.post('/webhook', (req, res, next) => {
 
