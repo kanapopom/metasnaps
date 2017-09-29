@@ -34,7 +34,7 @@ server.post('/webhook', (req, res, next) => {
                         let reply_message;
 
                         if (response.result.action == "change"){
-                                reply_message = `${response.result.parameters.change}`;
+                                reply_message = `${response.result.fulfillment.speech}`;
                             }
                         else if (response.result.action == "input.unknown"){
                             reply_message = response.result.fulfillment.speech;
