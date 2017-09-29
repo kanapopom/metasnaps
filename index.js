@@ -28,15 +28,12 @@ server.post('/webhook', (req, res, next) => {
 
         if (event.type == "message" || event.message.type == "text"){
             events_processed.push(
-
                 nlp.textRequest(event.message.text, {sessionId: event.source.userId}).then(
                     (response) => {
                         console.log(`The action is ${response.result.action}.`);
                         let reply_message;
 
                         if (response.result.action == "change"){
-
-                            if (response.result.parameters.change === ""){
                                 reply_message = `${response.result.parameters.change}`;
                             }
                         } else if (response.result.action == "input.unknown"){
