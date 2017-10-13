@@ -45,6 +45,9 @@ server.post('/webhook', (req, res, next) => {
                                     else if (response.result.action == "tadaima"){
                                             reply_message = `${response.result.fulfillment.speech}`;
                                         }
+                                        else if (response.result.action == "love"){
+                                                reply_message = `${response.result.fulfillment.speech}`;
+                                            }
                                         else if (response.result.action == "nagu"){
                                                 reply_message = `${response.result.fulfillment.speech}`;
                                             }
