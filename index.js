@@ -51,6 +51,9 @@ server.post('/webhook', (req, res, next) => {
                                         else if (response.result.action == "nagu"){
                                                 reply_message = `${response.result.fulfillment.speech}`;
                                             }
+                                            else if (response.result.action == "imanani"){
+                                                    reply_message = `${response.result.fulfillment.speech}`;
+                                                }
                         else if (response.result.action == "input.unknown"){
                             reply_message = response.result.fulfillment.speech;
                         }
